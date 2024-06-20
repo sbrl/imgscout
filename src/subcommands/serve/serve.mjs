@@ -1,0 +1,23 @@
+"use strict";
+
+import fs from 'fs';
+import path from 'path';
+
+import log from '../../lib/core/NamespacedLog.mjs'; const l = log("serve");
+
+import settings from '../../settings.mjs';
+import AppServer from '../../lib/AppServer.mjs';
+
+// HACK: Make sure __dirname is defined when using es6 modules. I forget where I found this - a PR with a source URL would be great :D
+const __dirname = import.meta.url.slice(7, import.meta.url.lastIndexOf("/"));
+
+export default async function () {
+	
+	console.log(`(insert cool ansi art here when we know the name of this program)`);
+	
+	l.info(`SETTINGS`, settings);
+	
+	const app = new AppServer();
+	
+	await app.listen(settings.port, settings.bind);
+}
