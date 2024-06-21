@@ -1,0 +1,35 @@
+"use strict";
+
+import { promises as fs, readdir } from 'fs';
+import path from 'path';
+
+const readdir_opts = { withFileTypes: true, encoding: 'utf8' };
+
+export default async function walk_directories(dirpaths, filter_fn=null) {
+	const stack = [...dirpaths.map(async dirpath => await fs.readdir(dirpath, readdir_opts))];
+	
+	// First function returns stacks whenever you like, 2nd is the real generator
+	return [() => stack.length, async function*() {
+		do {
+			const next = stack.pop();
+			const filepath_abs = path.join(next.path, next.name);
+
+			if (next.isDirectory()) { // If it's a directory....
+				// Add all items in the dir to the stack
+				stack.push(...(await fs.readdir(
+					filepath_abs,
+					readdir_opts
+				)));
+				continue;
+			}
+
+			// Nope, it's a file
+
+			// If we have a filter function, then check against it
+			if (filter_fn !== null && !filter_fn(filepath_abs)) continue;
+
+			yield filepath_abs;
+		} while (stack.length > 0);
+	}]
+	
+}
