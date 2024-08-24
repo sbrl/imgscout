@@ -3,6 +3,7 @@
 import os from "os";
 
 import BetterQueue from "better-queue";
+import p_map from "p-map";
 
 import log from './lib/core/NamespacedLog.mjs'; const l = log("crawlindexer");
 import walk_directories from "../io/walk_directories.mjs";
@@ -37,7 +38,19 @@ class CrawlIndexer {
 	async #do_batch(filepaths) {
 		const vectors = await this.pythonmanager.clipify_image(filepaths);
 		l.log(`DEBUG RESULT vectors`, vectors);
-		// TODO put these in a database hanging off this.app
+		const ids = this.app.idtracker.getids(vectors.length);
+		const items = [];
+		for(const i in vectors) {
+			items.push({
+				id: ids[i],
+				vector: vectors[i]
+			});
+		}
+		this.app.index_vector.add(items);
+		
+		await p_map(items, async (item) => {
+			// TODO fetch & index exif data here
+		}, { stopOnError: false, concurrency: os.cpus() });
 	}
 
 	/**

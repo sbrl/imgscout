@@ -12,12 +12,15 @@
     "applause-cli": "^1.8.2",
     "better-queue": "^3.8.12",
     "exiftool-vendored": "^27.0.0",
+    "gunzip-maybe": "^1.4.2",
+    "hnsw": "^1.0.2",
     "magickwand.js": "^1.1.0",
     "mime": "^4.0.3",
     "nexline": "^1.2.2",
     "njodb": "^0.4.38",
     "npm": "^10.8.1",
     "p-limit": "^5.0.0",
+    "p-map": "^7.0.2",
     "powahroot": "^1.2.10",
     "pretty-ms": "^9.0.0"
   }
