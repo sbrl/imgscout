@@ -8,6 +8,7 @@ import njodb from 'njodb';
 
 import log from './core/NamespacedLog.mjs'; const l = log("app");
 import routes from "./routes.mjs";
+import CrawlIndexer from './index/CrawlIndexer.mjs';
 
 async function mkdir(dirpath) {
 	if(!existsSync(dirpath))
@@ -19,6 +20,10 @@ class AppServer {
 		this.dirpath_data = dirpath_data;
 		this.dirpath_db_meta = path.join(this.dirpath_data, `db_meta`);
 		
+		this.crawler = new CrawlIndexer();
+		
+		// TODO init databases here
+		// TODO create python child manager and put it here? see PythonManager for more information
 		
 		this.router = routes(this);
 	}
