@@ -70,31 +70,39 @@ def load_images(
     return ds, dl
 
 def clipify_image(msgid: str, filepaths: list[str]) -> None:
-	global model, device
-	# TODO clipificate the filepaths (doing everything in parallel where possible) and return here
-	# TODO rewrite this to native 
-	
-	# images = torch.stack(images).to(device)
-	ds, dl = load_images(filepaths)
-	with torch.no_grad():
-		last = pc()
-		for i, batch in enumerate(dl):
-			after_decode = pc()
-			time_decode = after_decode - last
-			image_features = model.encode_image(batch.to(device))
-			time_ai = pc() - after_decode
-			now = pc()
-			send_id(msgid, "clipify-image", { # ID keeps everything organised & reduces data back & forth
-				"vectors": image_features.tolist(), # Should correspond 1:1 w/filepaths
-				"batch_index": i,
-				"time": now - last, # ...in seconds
-				"time_decode": round(time_decode, 2),
-				"time_ai": round(time_ai, 2),
-			})
-			last = now
+    global model, device
+    # TODO clipificate the filepaths (doing everything in parallel where possible) and return here
+    # TODO rewrite this to native
 
- 
-	pass
+    # images = torch.stack(images).to(device)
+    ds, dl = load_images(filepaths)
+
+    result = []
+
+    time_ai = 0
+    time_decode = 0
+    start = pc()
+    with torch.no_grad():
+        last = pc()
+        for i, batch in enumerate(dl):
+            after_decode = pc()
+            time_decode += after_decode - last
+
+            image_features = model.encode_image(batch.to(device))
+            result = result + image_features.tolist() # Concat, ref <https://stackoverflow.com/a/56407963/1460422>
+
+            time_ai += pc() - after_decode
+            now = pc()
+
+            last = now
+
+    send_id(msgid, "clipify-image", { # ID keeps everything organised & reduces data back & forth
+		"vectors": result,  # Should correspond 1:1 w/filepaths
+		"batch_index": i,
+		"time": round(pc() - start, 2),  # ...in seconds
+		"time_decode": round(time_decode, 2),
+		"time_ai": round(time_ai, 2),
+	})
 
 def clipify_text(msgid: str, text: str | list[str]) -> None:
 	if text is str:

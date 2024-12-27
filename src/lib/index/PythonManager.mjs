@@ -68,18 +68,20 @@ class PythonManager extends EventTarget {
 		const result = await this.do_job(`clipify-image`, {
 			filepaths
 		});
-		return result.vectors;
+		return result;
 	}
 	
 	async clipify_text(text) {
 		const result = await this.do_job(`clipify-text`, {
 			text
 		});
+		return result;
 	}
 	
 	
 	// ----------------------------------------------------------------------
 	
+	// Internal workings below - you probably want the functions above
 	
 	/**
 	 * Executes a job in the Python worker process and returns the result.

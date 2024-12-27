@@ -30,7 +30,7 @@ class VectorIndex {
 		for (const line of nl) {
 			let parsed;
 			switch (this.mode) {
-				case "json":
+				case "jsonl":
 					parsed = JSON.parse(line);
 					break;
 				case "csv":

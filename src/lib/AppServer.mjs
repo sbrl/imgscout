@@ -26,7 +26,7 @@ class AppServer {
 		
 		this.idtracker = new IdTracker(this.filepath_idtracker);
 		this.crawler = new CrawlIndexer();
-		this.index_vector = new VectorIndex(path.join(this.dirpath_data, ))
+		this.index_vector = new VectorIndex(path.join(this.dirpath_data, `vectordb.jsonl`));
 		
 		// TODO init databases here
 		// TODO create python child manager and put it here? see PythonManager for more information
