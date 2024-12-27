@@ -7,7 +7,6 @@ import torch
 import torchvision
 # import simplejpeg
 
-from torchvision.transforms.functional import resize, center_crop
 from torchvision.transforms import Compose, Resize, CenterCrop
 #, ToTensor, Normalize
 from torchvision.transforms import InterpolationMode
