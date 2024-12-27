@@ -62,7 +62,7 @@ def load_images(
     filepaths: list[str]
 ) -> (torch.utils.data.Dataset, torch.utils.data.DataLoader):
     # All preprocessing hasta be done on the CPU 'cause otherwise we get crashes like "RuntimeError: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method" and other sadness.
-    # NOTE GPU-accelerated image decoding may be worth a look in the future. Empirical evidence: time_decode=0.65s, time_ai=0.24s for 2xPNGs, CUDA on mobile nvidia 3060
+    # NOTE GPU-accelerated image decoding may be worth a look in the future. Empirical evidence: time_decode=0.65s, time_ai=0.24s for 2xPNG files, CUDA on mobile nvidia 3060
     ds = CLIPImageDataset(filepaths, device="cpu", image_size=image_size)
     dl = torch.utils.data.DataLoader(
         ds, batch_size=batch_size, num_workers=os.cpu_count()
