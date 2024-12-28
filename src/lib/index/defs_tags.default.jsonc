@@ -1,0 +1,38 @@
+{
+	/*
+	This is the default exif/xmp/metadata/etc tags definition. It will get overwritten if you update!
+	User-specified tags definition files are coming soon, but if you do see something that would be generally useful please open a PR!
+	It operates on the Tags object returned from exiftool-vendored.read().
+	*/
+	
+	
+	/*
+	Values are that from <https://photostructure.github.io/exiftool-vendored.js/interfaces/Tags.html> or <https://photostructure.github.io/exiftool-vendored.js/interfaces/FileTags.html>. When inserted into the metadata index in this app, each property is converted to snake_case automatically.
+	Properties are in the form `"ExifTagName": default_value`.
+	
+	So, for example, `"ImageWidth": -1` here means:
+	
+	1. Find the exif/etc tag called `ImageWidth`
+	2. Default to a value of `-1` if not found
+	3. Push the resulting value into the `image_width` key in the meta index.
+	
+	*/
+	"tags": {
+		"ImageHeight": -1,
+		"ImageWidth": -1
+	},
+	
+	/*
+	Aliases work in the form `"TagName": ["AliasTagA", "AliasTagB", ....].
+	
+	Values are determined in priority order:
+	
+	1. If a value is available for the original property name (`TagName` in this example), then that is used.
+	2. Otherwise, the list of alias tags are checked in order.
+	3. If no value is found, then the default value of the original tag is used instead.
+	*/
+	
+	"aliases": {
+		
+	}
+}

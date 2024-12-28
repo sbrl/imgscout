@@ -19,6 +19,7 @@ def send_raw(payload: str) -> None:
 	sys.stdout.write(payload + "\n")
 def send_id(msgid: str, event: str, data: dict) -> None:
 	# IMPORTANT: Use ONLY this function when reporting results of jobs!
+	# FUTURE consider optional BSON mode? This would make transferring embeddings etc a *lot* more efficient - esp considering number accuracy & serialisation etc
 	payload = json.dumps({
 		"msgid": msgid,
 		"event": event,
@@ -98,7 +99,6 @@ def clipify_image(msgid: str, filepaths: list[str]) -> None:
 
     send_id(msgid, "clipify-image", { # ID keeps everything organised & reduces data back & forth
 		"vectors": result,  # Should correspond 1:1 w/filepaths
-		"batch_index": i,
 		"time": round(pc() - start, 2),  # ...in seconds
 		"time_decode": round(time_decode, 2),
 		"time_ai": round(time_ai, 2),

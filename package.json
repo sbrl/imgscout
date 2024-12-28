@@ -11,9 +11,11 @@
   "dependencies": {
     "applause-cli": "^1.8.2",
     "better-queue": "^3.8.12",
+    "comment-json": "^4.2.5",
     "exiftool-vendored": "^29.0.0",
     "gunzip-maybe": "^1.4.2",
     "hnsw": "^1.0.3",
+    "jssha": "^3.3.1",
     "lookpath": "^1.2.2",
     "mime": "^4.0.6",
     "nexline": "^1.2.2",

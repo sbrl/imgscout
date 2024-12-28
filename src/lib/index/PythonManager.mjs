@@ -68,14 +68,17 @@ class PythonManager extends EventTarget {
 		const result = await this.do_job(`clipify-image`, {
 			filepaths
 		});
-		return result;
+		// TODO log timing information etc here
+		// TODO create a centralised CrawlIndexer logging feed that goes to a Server-Sent Events feed that everyone can connect to so they can see the status of the crawler. Perhaps this is a separate linker class or something? I dunno 'cause it's linking 2 very different areas of the app w/different lifetimes etc..... something to consider later.
+		return result.vectors;
 	}
 	
 	async clipify_text(text) {
 		const result = await this.do_job(`clipify-text`, {
 			text
 		});
-		return result;
+		// TODO log timing information etc here
+		return result.vectors;
 	}
 	
 	

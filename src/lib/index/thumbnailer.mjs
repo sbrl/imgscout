@@ -32,7 +32,7 @@ export default async function make_thumbnail(filepath_source, filepath_target, t
 		filepath_target
 	]);
 	
-	console.log(result); // TODO inspect this and do something withe.g. the exit code
+	l.log(`RESULT`, result); // TODO inspect this and do something withe.g. the exit code
 	
 	return true;
 }
