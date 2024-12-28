@@ -66,11 +66,14 @@ class IdTracker {
 			if(error.code == `ENOENT`) {
 				this.nextid = 0;
 				await fs.writeFile(this.filepath, `0`);
+				content = 0;
 			}
 			else
 				throw error;
 		}
-		this.nextid = parseInt(content);
+		finally {
+			this.nextid = parseInt(content);
+		}
 	}}
 }
 

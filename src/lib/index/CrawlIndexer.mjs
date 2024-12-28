@@ -217,7 +217,7 @@ class CrawlIndexer {
 		if(this.crawl_i !== null) {
 			l.warn(`Can't start a new crawl before the last one has finished`);
 		}
-		this.crawl_i = 0;;
+		this.crawl_i = 0;
 		for await (let filepath of walk_directories(this.targets, this.#filter_filepath.bind(this))) {
 			// TODO implement ignore system here
 			
@@ -225,12 +225,13 @@ class CrawlIndexer {
 			// See also https://www.npmjs.com/package/better-queue#updating-task-status
 			// There's a built-in progress indicator
 			
-			i++;
+			this.crawl_i++;
 		}
 		
 		// TODO send SSE message here to keep everyone up to date ref status, see one of the comments around here somewhere ref the plan for that.... I forget where.
 		
 		await this.check_for_deleted();
+		this.crawl_i = null;
 	}
 	
 	get_crawl_status() {
@@ -241,7 +242,7 @@ class CrawlIndexer {
 				// TODO update this with more stats etc
 				return {
 					state: "active",		// We're crawling rn
-					walker: this.crawl_i,	// The walker has walked this many items (but these haven't necessarily been indexed yet)
+					walker: this.crawl_i,	// The walker has walked this many items (but these haven't necessarily been indexed yet). Doesn't include ignored items
 					// TODO add more visibility into the system here, incl. performance metrics etc
 				};
 		}
