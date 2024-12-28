@@ -2,9 +2,12 @@
 
 import os from "os";
 import fs from "fs/promises";
+import { existsSync } from "fs";
+import path from "path";
 
 import BetterQueue from "better-queue";
 import p_map from "p-map";
+import ignore from "ignore";
 
 import log from './lib/core/NamespacedLog.mjs'; const l = log("crawlindexer");
 import walk_directories from "../io/walk_directories.mjs";
@@ -13,16 +16,17 @@ import extract_exif from "./extract_exif.mjs";
 import metadata_apply from "./metadata_apply.mjs";
 import get_hashed_filepath from "../io/get_hashed_filepath.mjs";
 import make_thumbnail from "./thumbnailer.mjs";
-import { existsSync } from "fs";
 
 class CrawlIndexer {
+	#has_init = false;
+	#ignore = null;
 	#__bound_do_item = null;
 	
 	constructor(dirpaths_targets, app, concurrent_batch = 1, concurrent_single = "__CPU_COUNT__", batch_size = 64) {
 		this.app = app;
 		
 		this.targets = dirpaths_targets;
-		this.dirpath_data = dirpath_data;
+		this.dirpath_data = this.app.dirpath_data;		
 		
 		this.pythonmanager = new PythonManager();
 
@@ -51,6 +55,20 @@ class CrawlIndexer {
 		this.crawl_i = null;
 		
 		this.#__bound_do_item = this.#do_item.bind(this);
+	}
+	
+	async #init() {
+		if(this.#has_init) return;
+		
+		let rules_ignore = [];
+		if (existsSync(this.app.filepath_ignore))
+			rules_ignore = (await fs.readFile(this.app.filepath_ignore, `utf-8`))
+				.split(`\n`)
+				.map(line => line.trim());
+		
+		this.#ignore = ignore().add(rules_ignore);
+		
+		this.#has_init = true;
 	}
 	
 	async #preprocess_item(filepath) {
@@ -182,12 +200,27 @@ class CrawlIndexer {
 		return to_delete.length;
 	}
 	
+	/**
+	 * Filter function for passing to walk_directories()
+	 * @param	{string}	filepath	The filepath to filter on.
+	 * @returns	{boolean}	Whether we want to keep it or not. Returning `true` means we wanna keep the filepath. Returning `false` means we wanna skip the filepath.
+	 */
+	#filter_filepath(filepath) {
+		// If .ignores() is true, then we invert to false which means we skip the file.
+		// if .ignores() is false, then we invert to true which means we keep it.
+		return !this.#ignore.ignores(filepath);
+	}
+	
 	async crawl() {
+		await this.#init();
+		
 		if(this.crawl_i !== null) {
 			l.warn(`Can't start a new crawl before the last one has finished`);
 		}
 		this.crawl_i = 0;;
-		for await (let filepath of walk_directories(this.targets)) {
+		for await (let filepath of walk_directories(this.targets, this.#filter_filepath.bind(this))) {
+			// TODO implement ignore system here
+			
 			this.queue_preprocess.push(filepath);
 			// See also https://www.npmjs.com/package/better-queue#updating-task-status
 			// There's a built-in progress indicator

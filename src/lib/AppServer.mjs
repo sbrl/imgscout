@@ -25,7 +25,7 @@ class AppServer {
 		this.dirpath_db_meta = path.join(this.dirpath_data, `db_meta`);
 		this.filepath_db_vector = path.join(this.dirpath_data, `vecindex.jsonl.gz`)
 		this.filepath_idtracker = path.join(this.dirpath_data, `nextid.txt`);
-		
+		this.filepath_ignore = path.join(this.dirpath_data, `ignore`);
 		
 		this.idtracker = new IdTracker(this.filepath_idtracker);
 		this.crawler = new CrawlIndexer();

@@ -26,6 +26,8 @@ export default async function walk_directories(dirpaths, filter_fn=null) {
 			// Nope, it's a file
 
 			// If we have a filter function, then check against it
+			// If filter_fn returns true, then keep we keep the filepath
+			// if filter_fn returns false, we skip it
 			if (filter_fn !== null && !filter_fn(filepath_abs)) continue;
 
 			yield filepath_abs;
