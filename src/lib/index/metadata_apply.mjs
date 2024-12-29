@@ -21,6 +21,12 @@ function to_snake_case(string) {
 /**
  * Sorts, normalises, and applies exif/xmp/etc etc etc tags from a tags list from exiftool-vendored to a metadata index record.
  * 
+ * See also:
+ * - <https://photostructure.github.io/exiftool-vendored.js/interfaces/Tags.html>
+ * - <https://photostructure.github.io/exiftool-vendored.js/interfaces/FileTags.html>
+ * - <https://exiftool.org/TagNames/>
+ * - <https://github.com/photostructure/exiftool-vendored.js?tab=readme-ov-file#benchmarking>
+ * 
  * Does NOT save the record - onlymutates it!
  * @param	{Tags}		exif	Output object from extract_exif()
  * @param	{[type]}	record	The record from the metadata index to update - see also MetaIndex.mjs
