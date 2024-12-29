@@ -149,19 +149,22 @@ class PythonManager extends EventTarget {
 		});
 		
 		this.pychild.on("spawn", async () => {
-			this.dispatchEvent(`ready`, new CustomEvent());
+			this.dispatchEvent(new CustomEvent(`ready`));
 			await this.send({
 				event: `start`,
 				data: {
 					// Other options: RN50 RN101 RN50x4 RN50x16 RN50x64 ViT-B/32 ViT-B/16 ViT-L/14 ViT-L/14@336px
+					// TODO implement support for multiple image sizes
 					// Ref https://github.com/openai/CLIP/blob/main/model-card.md#model-versions
+					// TODO Track these back to a config file in dirpath_data etc
 					model_clip: `ViT-B/16`,
 					device: `cpu`, // for now - we're aiming to run on low power devices. TODO quantise clip
+					batch_size: 32
 				}
 			});
 		});
 		this.pychild.on("close", () => {
-			this.dispatchEvent(`child-close`, new CustomEvent());
+			this.dispatchEvent(new CustomEvent(`child-close`));
 			if(this.respawn) {
 				this.#spawn();
 			}

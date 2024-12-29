@@ -20,7 +20,6 @@ export default async function() {
 	l.info(`SETTINGS`, settings);
 	
 	const app = new AppServer(settings.datadir);
-	await app.init();
 	
 	l.log(`DEBUG: STARTING CRAWL`);
 	await app.crawler.crawl();

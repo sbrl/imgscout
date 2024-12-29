@@ -26,7 +26,8 @@ class CrawlIndexer {
 		this.app = app;
 		
 		this.targets = dirpaths_targets;
-		this.dirpath_data = this.app.dirpath_data;		
+		if(typeof(this.targets) == `string`)
+			this.targets = [ this.targets ];
 		
 		this.pythonmanager = new PythonManager();
 
@@ -201,6 +202,24 @@ class CrawlIndexer {
 	}
 	
 	/**
+	 * The ignore package apparently hates absolute paths, so this function makes an absolute path relative.
+	 * Basically filepath → make relative → prepend basename(target).
+	 * Picks the first target found that matches the beginning of the filepath.
+	 * @param	{string}	filepath	The filepath to make relative.
+	 * @returns	{string}	The relativified filepath.
+	 */
+	#make_filepath_relative(filepath) {
+		for(const target of this.targets) {
+			if(target.substring(0, target.length) == target) {
+				const result = target.substring(target.length);
+				// Return the dirname of target + the relative path for filtering based on which target dir in case of multiple dirs
+				return path.join(path.basename(target), result);
+			}
+		}
+		return filepath;
+	}
+	
+	/**
 	 * Filter function for passing to walk_directories()
 	 * @param	{string}	filepath	The filepath to filter on.
 	 * @returns	{boolean}	Whether we want to keep it or not. Returning `true` means we wanna keep the filepath. Returning `false` means we wanna skip the filepath.
@@ -208,7 +227,7 @@ class CrawlIndexer {
 	#filter_filepath(filepath) {
 		// If .ignores() is true, then we invert to false which means we skip the file.
 		// if .ignores() is false, then we invert to true which means we keep it.
-		return !this.#ignore.ignores(filepath);
+		return !this.#ignore.ignores(this.#make_filepath_relative(filepath));
 	}
 	
 	async crawl() {
@@ -218,7 +237,10 @@ class CrawlIndexer {
 			l.warn(`Can't start a new crawl before the last one has finished`);
 		}
 		this.crawl_i = 0;
-		for await (let filepath of walk_directories(this.targets, this.#filter_filepath.bind(this))) {
+		
+		const [get_stack_length, walker] = await walk_directories(this.targets, this.#filter_filepath.bind(this));
+		
+		for await (let filepath of walker()) {
 			// TODO implement ignore system here
 			
 			this.queue_preprocess.push(filepath);
@@ -226,6 +248,9 @@ class CrawlIndexer {
 			// There's a built-in progress indicator
 			
 			this.crawl_i++;
+			
+			// TODO implement proper logging system for goodness sake
+			l.info(`walker: stack length is ${get_stack_length()}`);
 		}
 		
 		// TODO send SSE message here to keep everyone up to date ref status, see one of the comments around here somewhere ref the plan for that.... I forget where.

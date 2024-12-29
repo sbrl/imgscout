@@ -6,13 +6,16 @@ import path from 'path';
 const readdir_opts = { withFileTypes: true, encoding: 'utf8' };
 
 export default async function walk_directories(dirpaths, filter_fn=null) {
-	const stack = [...dirpaths.map(async dirpath => await fs.readdir(dirpath, readdir_opts))];
+	const stack = (await Promise.all(
+		dirpaths.map(async dirpath => await fs.readdir(dirpath, readdir_opts))
+	)).flat(Infinity);
 	
-	// First function returns stacks whenever you like, 2nd is the real generator
+	// First function returns stack length whenever you like, 2nd is the real generator
 	return [() => stack.length, async function*() {
 		do {
 			const next = stack.pop();
-			const filepath_abs = path.join(next.path, next.name);
+			console.log(`[walker] NEXT`, next);
+			const filepath_abs = path.join(next.parentPath, next.name);
 
 			if (next.isDirectory()) { // If it's a directory....
 				// Add all items in the dir to the stack

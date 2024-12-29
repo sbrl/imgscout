@@ -1,6 +1,6 @@
 "use strict";
 
-import { existsSync, promises as fs } from 'fs';
+import fs from 'fs';
 import http from 'http';
 import path from 'path';
 
@@ -13,9 +13,13 @@ import VectorIndex from './index/VectorIndex.mjs';
 import IdTracker from './index/IdTracker.mjs';
 import MetaIndex from './index/MetaIndex.mjs';
 
-async function mkdir(dirpath) {
-	if(!existsSync(dirpath))
-		await fs.mkdir(dirpath, { recursive: true });
+function mkdir(dirpath) {
+	if(!fs.existsSync(dirpath))
+		fs.mkdirSync(dirpath, { recursive: true });
+}
+function mkfile(filepath) {
+	if(!fs.existsSync(filepath))
+		fs.writeFileSync(filepath, ``);
 }
 
 class AppServer {
@@ -55,9 +59,19 @@ class AppServer {
 		 */
 		this.filepath_ignore = path.join(this.dirpath_data, `ignore`);
 		
+		
+		mkdir(this.dirpath_data);
+		mkdir(this.dirpath_db_meta);
+		mkfile(this.filepath_ignore);
+		
+		// TODO app settings here
+		
 		// Module class instances for managing various things etc
 		this.idtracker = new IdTracker(this.filepath_idtracker);
-		this.crawler = new CrawlIndexer();
+		this.crawler = new CrawlIndexer(
+			`/tmp/x/test`,
+			this
+		);
 		this.index_vector = new VectorIndex(path.join(this.dirpath_data, `vectordb.jsonl`));
 		this.index_meta = new MetaIndex(this.dirpath_db_meta);
 		
@@ -65,11 +79,6 @@ class AppServer {
 		// TODO create python child manager and put it here? see PythonManager for more information
 		
 		this.router = routes(this);
-	}
-	
-	async init() {
-		await mkdir(this.dirpath_data);
-		await mkdir(this.dirpath_db_meta);
 	}
 	
 	async listen(port, bind_address = `::1`) {

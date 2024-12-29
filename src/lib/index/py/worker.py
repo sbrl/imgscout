@@ -46,7 +46,7 @@ def msgid(obj: dict) -> str:
 
 ##########################################################################
 
-
+# WARNING: real defaults are in PythonManager.py:#spawn
 def initialise(model_clip: str = "ViT-L/14", in_device: str = "cpu", in_batch_size: int = 64) -> None:
 	global model, device, batch_size
 	
