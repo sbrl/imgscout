@@ -11,7 +11,7 @@ import AppServer from '../../lib/AppServer.mjs';
 // HACK: Make sure __dirname is defined when using es6 modules. I forget where I found this - a PR with a source URL would be great :D
 const __dirname = import.meta.url.slice(7, import.meta.url.lastIndexOf("/"));
 
-export default async function () {
+export default async function() {
 	if(settings.datadir === null)
 		throw new Error(`No data directory specified via the --datadir CLI arg.`);
 	
@@ -20,6 +20,8 @@ export default async function () {
 	l.info(`SETTINGS`, settings);
 	
 	const app = new AppServer(settings.datadir);
+	await app.init();
 	
-	await app.listen(settings.port, settings.bind);
+	l.log(`DEBUG: STARTING CRAWL`);
+	await app.crawler.crawl();
 }

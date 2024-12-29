@@ -5,7 +5,7 @@ import { exec, execFile as execFileCB } from 'child_process';
 
 import { lookpath } from 'lookpath';
 
-import log from './lib/core/NamespacedLog.mjs'; const l = log("thumbnailer");
+import log from '../core/NamespacedLog.mjs'; const l = log("thumbnailer");
 
 const execFile = promisify(execFileCB);
 

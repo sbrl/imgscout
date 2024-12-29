@@ -6,7 +6,7 @@ import crypto from 'crypto';
 
 import nexline from 'nexline';
 
-import log from './lib/core/NamespacedLog.mjs'; const l = log("pythonmanager");
+import log from '../core/NamespacedLog.mjs'; const l = log("pythonmanager");
 const lpy = log("pythonworker");
 
 import { write_safe } from '../io/StreamHelpers.mjs';

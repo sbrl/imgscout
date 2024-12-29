@@ -9,7 +9,7 @@ import BetterQueue from "better-queue";
 import p_map from "p-map";
 import ignore from "ignore";
 
-import log from './lib/core/NamespacedLog.mjs'; const l = log("crawlindexer");
+import log from '../core/NamespacedLog.mjs'; const l = log("crawlindexer");
 import walk_directories from "../io/walk_directories.mjs";
 import PythonManager from "./PythonManager.mjs";
 import extract_exif from "./extract_exif.mjs";

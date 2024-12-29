@@ -67,15 +67,13 @@ class AppServer {
 		this.router = routes(this);
 	}
 	
-	async #init() {
+	async init() {
 		await mkdir(this.dirpath_data);
 		await mkdir(this.dirpath_db_meta);
-		
-		this.db_meta = new njodb.Database(this.dirpath_db_meta);
 	}
 	
 	async listen(port, bind_address = `::1`) {
-		await this.#init();
+		await this.init();
 		
 		// ...please don't expose me directly. Use a reverse proxy!
 		this.server = http.createServer((request, response) => {

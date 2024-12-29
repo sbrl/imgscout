@@ -21,14 +21,14 @@ function make_hash(string) {
  * Example use case: a thumbnail cache.
  * 
  * @param	{string}	dirpath_root	The root directory for the whole setup.
- * @param	{string}	filepath_target	The filepath to hash & turn into the returned filepath.
+ * @param	{string}	filepath_source	The filepath to hash & turn into the returned filepath.
  * @param	{number}	[depth=3]		The number of levels of nesting to implement.
  * @returns	{string}	The resulting filepath, sans-extension.
  */
-export default async function get_hashed_filepath(dirpath_root, filepath_target, depth=3) {
-	const hash = make_hash(filepath_target);
+export default async function get_hashed_filepath(dirpath_root, filepath_source, depth=3) {
+	const hash = make_hash(filepath_source);
 	// Get basename → remove all . extensions etc
-	const filestem = path.basename(filepath_target).replace(/\..*$/, ``);
+	const filestem = path.basename(filepath_source).replace(/\..*$/, ``);
 	
 	const filename_target = `${hash}_${filestem}`;
 	

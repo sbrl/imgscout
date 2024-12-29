@@ -8,7 +8,7 @@ import { parse } from 'comment-json';
 // HACK: Make sure __dirname is defined when using es6 modules. I forget where I found this - a PR with a source URL would be great!
 const __dirname = import.meta.url.slice(7, import.meta.url.lastIndexOf("/"));
 
-const filepath_defs = path.join(__dirname, `exif_tags.default.jsonc`);
+const filepath_defs = path.join(__dirname, `defs_tags.default.jsonc`);
 
 // TODO support custom definition files here. We prob need an init() function and the appdata folder etc
 const defs = parse(await fs.readFile(filepath_defs, `utf-8`));
