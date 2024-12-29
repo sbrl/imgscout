@@ -25,9 +25,10 @@ export default async function make_thumbnail(filepath_source, filepath_target, t
 		throw new Error(`Error: Unsafe filepath_target '${filepath_target}'. Reason: filepath starts with a -`);
 	
 	const result = await execFile(bin_magick, [
-		filepath_source
-		`-all=`, // Remove all tags, ref https://stackoverflow.com/a/2654314/1460422
+		filepath_source,
+		// `-all=`, // Remove all tags, ref https://stackoverflow.com/a/2654314/1460422
 		`-auto-orient`,
+		// -thumbnail removes all exif tags
 		`-thumbnail`, thumbnail_size.replace(/[^0-9x]/g, ``),
 		filepath_target
 	]);

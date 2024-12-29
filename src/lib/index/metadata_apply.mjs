@@ -34,6 +34,8 @@ function to_snake_case(string) {
  */
 export default function metadata_apply(exif, record) {
 	const to_apply = new Map();
+	
+	// First look for a value from the primary tag name
 	for(const tag in defs.tags) {
 		if(typeof exif[tag] !== "undefined")
 			to_apply.set(tag, exif[tag]);
@@ -51,13 +53,14 @@ export default function metadata_apply(exif, record) {
 		}
 	}
 	
+	
+	// Nah, still doesn't have a value. Set to default!
 	for(const tag in defs.tags) {
-		if(to_apply.has(tag_source)) continue;
-		// Nah, still doesn't have a value. Set to default!
+		if(to_apply.has(tag)) continue;
 		to_apply.set(tag, defs.tags[tag]);
 	}
 	
-	// Indescriminately update the record with the new values
+	// Indescriminately update (aka MUTATE) the given record with the new values
 	for(const [key, value] of to_apply) {
 		record[to_snake_case(key)] = value;
 	}

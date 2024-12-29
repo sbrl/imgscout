@@ -23,7 +23,7 @@ export default async function () {
 	let settings = (await import("./settings.mjs")).default;
 	let cli = new CliParser(path.resolve(__dirname, "../package.json"));
 	cli.argument("verbose", "Enable verbose debugging output", null, "boolean")
-		.argument("log-level", "Set the logging level (possible values: debug, info [default], log, warn, error, none)", "info", "string");
+		.argument("log-level", "Set the logging level (possible values: debug, info [default], log, warn, error, none)", "debug", "string");
 	
 	await load_subcommands(cli);
 	

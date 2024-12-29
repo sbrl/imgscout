@@ -1,13 +1,15 @@
 "use strict";
 
-import fs from 'fs';
+import fs, { existsSync } from 'fs';
 import path from 'path';
+import { createGunzip, createGzip } from 'zlib';
 
-import { end_safe, write_safe } from '../io/StreamHelpers.mjs';
 import { HNSW } from 'hnsw';
 import nexline from 'nexline';
-import gunzip from 'gunzip-maybe';
-import { createGzip } from 'zlib';
+// import gunzip from 'gunzip-maybe'; //  nexline doesn't like it anymore :-(
+
+import log from '../core/NamespacedLog.mjs'; const l = log("vectorindex");
+import { end_safe, write_safe } from '../io/StreamHelpers.mjs';
 
 class VectorIndex {
 	#last_rebuild = null;
@@ -23,7 +25,8 @@ class VectorIndex {
 	 */
 	constructor(filepath, min_ms = 0) {
 		this.filepath = filepath;
-		this.mode = path.extname(this.filepath.replace(/\.gz$/, "")).toLowerCase();
+		// WARNING: Note we remove compression file name extensions here!! When adding support for another format, it also needs updating here too....!
+		this.mode = path.extname(this.filepath.replace(/\.gz$/, "")).toLowerCase().replace(/^\.+/, ``);
 
 		this.data = null;
 		this.index = null;
@@ -42,15 +45,19 @@ class VectorIndex {
 	}
 
 	async load(reindex = true) {
-		const handle_raw = this.#open_read(this.filepath);
-		const gunzip = gunzip();
-		handle_raw.pipe(gunzip);
+		this.data = [];
+		if(!existsSync(this.filepath))
+			await fs.promises.writeFile(this.filepath, ``);
+		
+		const handle = this.#open_read(this.filepath);
 		const nl = nexline({
-			input: gunzip
+			input: handle
 		});
 
-		this.data = [];
 		for await (const line of nl) {
+			if(line.trim().length === 0)
+				continue;
+			
 			let parsed;
 			switch (this.mode) {
 				case "jsonl":
@@ -66,8 +73,16 @@ class VectorIndex {
 
 		if (reindex) this.reindex();
 	}
+	
+	async load_if_null(reindex = true) {
+		if(this.data === null)
+			await this.load(reindex);
+	}
 
 	query(vector, count) {
+		if(this.data === null)
+			throw new Error(`VectorIndex not ready. Call and await this.load_if_null() first!`);
+		
 		return this.index.searchKNN(vector, count);
 	}
 
@@ -77,9 +92,12 @@ class VectorIndex {
 	 * @returns	void
 	 */
 	async add(...items) {
+		await this.load_if_null();
+		
 		const handle = this.#open_write(this.filepath, `a`); // WARNING: Won't work for compressed stuff! TODO handle this
 		
 		for (const item of items) {
+			l.info(`add: item`, item);
 			if (typeof item.id != "number") throw new Error(`Invalid item id`);
 			if (!(item.vector instanceof Array)) throw new Error(`Invalid item vector`);
 			await write_safe(handle, this.#encode_item(item) + `\n`);
@@ -98,6 +116,8 @@ class VectorIndex {
 	 * @returns {void}
 	 */
 	async remove(...ids) {
+		await this.load_if_null();
+		
 		const toremove = [];
 		for (const id of ids) {
 			for (const i in this.items) {
@@ -127,8 +147,10 @@ class VectorIndex {
 		if(this.min_ms_reindex > 0 && this.#last_rebuild !== null && new Date() - this.#last_rebuild < this.min_ms_reindex)
 			return false;
 		
+		l.debug(`reindex: this.data`, this.data);
+		
 		this.index = new HNSW();
-		this.index.build(this.data);
+		this.index.buildIndex(this.data);
 		
 		this.#last_rebuild = new Date();
 		return true;
@@ -172,10 +194,13 @@ class VectorIndex {
 	}
 	
 	#open_read(filepath, flags=`r`) {
-		const raw = fs.createReadStream(filepath, { flags });
-		const gunzip = gunzip();
-		raw.pipe(gunzip);
-		return gunzip;
+		let handle = fs.createReadStream(filepath, { flags });
+		if(filepath.endsWith(`.gz`)) {
+			const gz = createGunzip();
+			handle.pipe(gz);
+			handle = gz;
+		}
+		return handle;
 	}
 }
 

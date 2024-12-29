@@ -12,7 +12,7 @@ l.log(`exiftool is version ${await exiftool.version()}`);
 
 export default async function extract_exif(filepath) {
 	const exif = await exiftool.read(filepath);
-	console.log(exif);
+	l.debug(`filepath`, filepath, `exif`, exif);
 	// See also <https://photostructure.github.io/exiftool-vendored.js/interfaces/FileTags.html> for a list of tags that aren't exif tags but are instead metadata
 	return exif;
 }

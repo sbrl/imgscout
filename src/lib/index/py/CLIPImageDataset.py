@@ -79,11 +79,9 @@ class CLIPImageDataset(torch.utils.data.Dataset):
             return None
 
         # Shape from torchvision.decode_image is [ channel, width, height ]
-        print("DEBUG:__getitem__ BEFORE_PERMUTE image.shape", image.shape)
         # image = torch.as_tensor(image, dtype=torch.float32).permute(2, 0, 1)
         image = image.permute(0, 2, 1)
         # Shape is now [ channel, height, width ]
-        print("DEBUG:__getitem__ AFTER_PERMUTE image.shape", image.shape)
         # return self.preprocess(image).to(device=self.device)
         return self.preprocess(image).to(device=self.device)
         # return self.preprocess(Image.open(self.files[image_id])).to(device=self.device)

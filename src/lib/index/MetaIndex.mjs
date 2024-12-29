@@ -2,6 +2,8 @@
 
 import njodb from 'njodb';
 
+import log from '../core/NamespacedLog.mjs'; const l = log("metaindex");
+
 /* Example record:
 {
 	id: int // global id
@@ -79,6 +81,10 @@ class MetaIndex {
 	}
 	
 	#check_errors(result) {
+		l.debug(`#check_errors:result`, result);
+		// Must not be any errors then
+		if(!(result.errors instanceof Array)) return;
+		// Might be errors if there's a list? Best check to be sure.
 		if (result.errors.length > 0)
 			throw new Error(`Error: Encountered error${result.errors.length > 1 ? `s` : ``} operating on the index: ${result.errors}`);
 	}
@@ -99,6 +105,9 @@ class MetaIndex {
 		return null;
 	}
 	
+	async add_record(record) {
+		return await this.add_records(record);
+	}
 	
 	async add_records(...records) {
 		const result = await this.db.insert(records);

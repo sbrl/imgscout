@@ -5,10 +5,12 @@ import path from 'path';
 import fs from 'fs/promises'
 import { existsSync } from 'fs';
 
+import slugify from 'slugify';
+
 // Hey you. Yes you! Go write a blog post :P
 
 function make_hash(string) {
-	const hash = new jsSHA(`SHA3-384`);
+	const hash = new jsSHA(`SHA3-384`, `TEXT`);
 	hash.update(string);
 	return hash.getHash(`HEX`);
 }
@@ -30,7 +32,7 @@ export default async function get_hashed_filepath(dirpath_root, filepath_source,
 	// Get basename → remove all . extensions etc
 	const filestem = path.basename(filepath_source).replace(/\..*$/, ``);
 	
-	const filename_target = `${hash}_${filestem}`;
+	const filename_target = `${hash}_${slugify(filestem)}`;
 	
 	const subdirs = [];
 	for(let i = 0; i < depth; i++) {

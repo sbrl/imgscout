@@ -14,7 +14,6 @@ export default async function walk_directories(dirpaths, filter_fn=null) {
 	return [() => stack.length, async function*() {
 		do {
 			const next = stack.pop();
-			console.log(`[walker] NEXT`, next);
 			const filepath_abs = path.join(next.parentPath, next.name);
 
 			if (next.isDirectory()) { // If it's a directory....

@@ -147,8 +147,8 @@ else:
 			case "start":
 				initialise(
 					model_clip=obj["data"]["model_clip"],
-					device=obj["data"]["device"],
-					batch_size=obj["data"]["batch_size"]
+					in_device=obj["data"]["device"],
+					in_batch_size=obj["data"]["batch_size"]
 				)
 			case "clipify-image":
 				clipify_image(msgid(obj), obj["data"]["filepaths"])

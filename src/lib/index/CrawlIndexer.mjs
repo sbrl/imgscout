@@ -36,11 +36,12 @@ class CrawlIndexer {
 			single: this.#parse_concurrent_single(concurrent_single)
 		};
 		
-		this.queue_preprocess = new BetterQueue((item, callback) => {
-			
+		this.queue_preprocess = new BetterQueue((filepath, callback) => {
+			// l.log(`DEBUG:queue_preprocess FILEPATH`, filepath);
 			this.#preprocess_item(filepath).then(callback);
 			
 		}, { concurrent: this.concurrent.single });
+		this.queue_preprocess.resume();
 		this.queue_main = new BetterQueue((batch, callback) => {
 			// TODO process batch via CLIP here
 			
@@ -51,8 +52,9 @@ class CrawlIndexer {
 		}, {
 			concurrent: this.concurrent.batched,
 			batchSize: batch_size,
-			batchDelay: 30 * 1000 // wait at most 30 seconds before running a batch to try & make sure batches are full
+			batchDelayTimeout: 3 * 1000 // wait at most 3 seconds for new tasks to be added to the queue before running a batch to try & make sure batches are full. If we can do a full batch immediately without waiting, then we will do so
 		});
+		this.queue_main.resume();
 		this.crawl_i = null;
 		
 		this.#__bound_do_item = this.#do_item.bind(this);
@@ -73,6 +75,8 @@ class CrawlIndexer {
 	}
 	
 	async #preprocess_item(filepath) {
+		l.log(`preprocess`, filepath);
+		
 		// We're concurrent here
 		let record = await this.app.index_meta.find(filepath);
 		let record_is_new = false;
@@ -88,7 +92,10 @@ class CrawlIndexer {
 		const stats = await fs.stat(filepath);
 		
 		// If mtime & filesize matches, then nah, don't bother
-		if(stats.mtime == record.mtime && stats.size == record.filesize) return;
+		if(stats.mtime == record.mtime && stats.size == record.filesize) {
+			l.info(`Record for ${filepath} is up to date, ${stats.size}=${record.filesize} && ${stats.mtime}=${record.mtime}, ref`, record);
+			return;
+		} 
 		
 		record.mtime = stats.mtime;
 		record.filesize = stats.size;
@@ -96,6 +103,7 @@ class CrawlIndexer {
 		// WARNING: record hasn't been saved yet! That comes later after the exif update.
 		
 		// Send it to the main queue o/
+		l.info(`📥 QUEUE:main`, filepath);
 		this.queue_main.push({
 			id: record.id,
 			filepath,
@@ -106,6 +114,8 @@ class CrawlIndexer {
 	
 	
 	async #do_batch(items) {
+		l.info(`process BATCH`, items);
+		
 		const vectors = await this.pythonmanager.clipify_image(items.map(item => item.filepath));
 		
 		l.log(`DEBUG RESULT vectors`, vectors);
@@ -117,10 +127,10 @@ class CrawlIndexer {
 		// TODO optimise this...! It's SO expensive >_<
 		// ............even with the timeout to ensure we don't rebuild the vector index on every batch that comes through
 		this.app.index_vector.remove(items.map(item => item.id));
-		this.app.index_vector.add(items);
+		this.app.index_vector.add(...items);
 		await this.app.index_vector.save();
 		
-		await p_map(items, this.#__bound_do_item.bind(this), { stopOnError: false, concurrency: os.cpus() });
+		await p_map(items, this.#__bound_do_item.bind(this), { stopOnError: false, concurrency: os.cpus().length });
 	}
 	
 	async #do_item(item) {
@@ -133,14 +143,14 @@ class CrawlIndexer {
 		
 		// Only set the thumbnail filepath if it doesn't already exist
 		// This way even if we change the hashed filepath algorithm later, it shouldn't affect existing thumbnails
-		if(typeof record.filepath_thumbnail !== "string")
-			record.filepath_thumbnail = await get_hashed_filepath(
+		if(typeof item.record.filepath_thumbnail !== "string")
+			item.record.filepath_thumbnail = await get_hashed_filepath(
 				this.app.dirpath_thumbnails,
 				item.filepath
-			);
+			) + `.jpg`;
 		
 		// Regenerate the thumbnail
-		await make_thumbnail(item.filepath, record.filepath_thumbnail);
+		await make_thumbnail(item.filepath, item.record.filepath_thumbnail);
 		
 		// Send the (new or updated) record to the metadata index
 		if(item.record_is_new)
@@ -231,6 +241,7 @@ class CrawlIndexer {
 	}
 	
 	async crawl() {
+		l.log(`crawl started at ${new Date().toISOString()}`)
 		await this.#init();
 		
 		if(this.crawl_i !== null) {
@@ -241,7 +252,10 @@ class CrawlIndexer {
 		const [get_stack_length, walker] = await walk_directories(this.targets, this.#filter_filepath.bind(this));
 		
 		for await (let filepath of walker()) {
+			l.info(`walker: ${filepath} // stack length ${get_stack_length()}`);
 			// TODO implement ignore system here
+			
+			// TODO IF THE QUEUE IS TOO FULL, WAIT FOR IT TO CALM DOWN A BIT HERE
 			
 			this.queue_preprocess.push(filepath);
 			// See also https://www.npmjs.com/package/better-queue#updating-task-status
@@ -250,13 +264,14 @@ class CrawlIndexer {
 			this.crawl_i++;
 			
 			// TODO implement proper logging system for goodness sake
-			l.info(`walker: stack length is ${get_stack_length()}`);
 		}
 		
 		// TODO send SSE message here to keep everyone up to date ref status, see one of the comments around here somewhere ref the plan for that.... I forget where.
 		
 		await this.check_for_deleted();
 		this.crawl_i = null;
+		
+		l.log(`crawl complete, but queues will have items remaining`);
 	}
 	
 	get_crawl_status() {
