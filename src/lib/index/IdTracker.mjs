@@ -67,6 +67,10 @@ class IdTracker {
 		this.#save();
 	}
 	
+	flush() {
+		this.#save();
+	}
+	
 	// -------------------------------------------------------------
 	
 	#queue_save() {
@@ -86,13 +90,17 @@ class IdTracker {
 		// Set a new save timer
 		this.#save_timer = setTimeout(() => {
 			this.#save();
-			this.#save_timer = null;
-			this.#last_save = new Date();
 		}, this.saveTimeout)
 	}
 	
 	#save() {
 		writeFileSync(this.filepath, `${this.nextid}`);
+		
+		if(this.#save_timer !== null)
+			clearTimeout(this.#save_timer);
+		
+		this.#save_timer = null;
+		this.#last_save = new Date();
 	}
 	
 	#load() {

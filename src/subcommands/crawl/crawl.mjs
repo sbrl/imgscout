@@ -24,5 +24,6 @@ export default async function() {
 	l.log(`DEBUG: STARTING CRAWL`);
 	await app.crawler.crawl();
 	
-	// Cannot close here because the crawler queues are probably still full
+	// We don't exit here because the crawler queues are probably still full
+	// We hang because of exiftool-vendored, and there's no good solution for when to tell exiftool-vendored to close down when we don't have a good way of restarting it again without restarting the entire process
 }

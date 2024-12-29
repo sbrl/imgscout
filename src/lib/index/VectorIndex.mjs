@@ -116,10 +116,12 @@ class VectorIndex {
 	 * @returns {void}
 	 */
 	async remove(...ids) {
+		l.info(`REMOVE ids`, ids)
 		await this.load_if_null();
 		
 		const toremove = [];
 		for (const id of ids) {
+			// FUTURE this is inefficient!
 			for (const i in this.items) {
 				if (this.items[i].id == id) {
 					toremove.push(i);
@@ -130,6 +132,7 @@ class VectorIndex {
 
 		toremove.sort().reverse();
 		for (const index of toremove) {
+			l.debug(`got one`);
 			this.data.splice(index, 1);
 		}
 		

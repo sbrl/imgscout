@@ -81,7 +81,6 @@ class MetaIndex {
 	}
 	
 	#check_errors(result) {
-		l.debug(`#check_errors:result`, result);
 		// Must not be any errors then
 		if(!(result.errors instanceof Array)) return;
 		// Might be errors if there's a list? Best check to be sure.
@@ -100,8 +99,10 @@ class MetaIndex {
 	 */
 	async find(filepath) {
 		const result = await this.db.select(record => record.filepath == filepath);
-		if(result.selected > 0)
-			return this.#normalise_record(result.data[0]);
+		if(result.selected > 0) {
+			this.#normalise_record(result.data[0]);
+			return result.data[0];
+		}
 		return null;
 	}
 	
@@ -110,7 +111,7 @@ class MetaIndex {
 	}
 	
 	async add_records(...records) {
-		l.log(`add_records: records`, records);
+		// l.debug(`add_records: records`, records);
 		const result = await this.db.insert(records);
 		this.#check_errors(result);
 		return result.inserted;

@@ -16,6 +16,7 @@ import extract_exif from "./extract_exif.mjs";
 import metadata_apply from "./metadata_apply.mjs";
 import get_hashed_filepath from "../io/get_hashed_filepath.mjs";
 import make_thumbnail from "./thumbnailer.mjs";
+import datecmp from "../core/datecmp.mjs";
 
 class CrawlIndexer {
 	#has_init = false;
@@ -92,10 +93,12 @@ class CrawlIndexer {
 		const stats = await fs.stat(filepath);
 		
 		// If mtime & filesize matches, then nah, don't bother
-		if(stats.mtime == record.mtime && stats.size == record.filesize) {
-			l.info(`Record for ${filepath} is up to date, ${stats.size}=${record.filesize} && ${stats.mtime}=${record.mtime}, ref`, record);
+		if (datecmp(stats.mtime, record.mtime) && stats.size == record.filesize) {
+			l.info(`Record for ${filepath} is up to date, ${stats.size}=${record.filesize} &&`,stats.mtime,`=`,record.mtime,`, ref`, record);
 			return;
-		} 
+		}
+		
+		l.info(`Record for ${filepath} is NOT up to date, ${stats.size}≠${record.filesize} →`, stats.size == record.filesize, `&&`, stats.mtime, `≠`, record.mtime, `→`, datecmp(stats.mtime,record.mtime),`, ref`, record);
 		
 		record.mtime = stats.mtime;
 		record.filesize = stats.size;
@@ -125,7 +128,7 @@ class CrawlIndexer {
 		
 		// TODO optimise this...! It's SO expensive >_<
 		// ............even with the timeout to ensure we don't rebuild the vector index on every batch that comes through
-		this.app.index_vector.remove(items.map(item => item.id));
+		this.app.index_vector.remove(...items.map(item => item.id));
 		this.app.index_vector.add(...items);
 		await this.app.index_vector.save();
 		
@@ -152,10 +155,15 @@ class CrawlIndexer {
 		await make_thumbnail(item.filepath, item.record.filepath_thumbnail);
 		
 		// Send the (new or updated) record to the metadata index
-		if(item.record_is_new)
+		if(item.record_is_new) {
 			await this.app.index_meta.add_record(item.record);
-		else
+			l.log(`ADD ${item.filepath}`);
+		}
+		else {
 			await this.app.index_meta.update_record(item.record);
+			l.log(`UPDATE ${item.filepath}`);
+		}
+		l.log(`>> record:`, item.record, `record_is_new`, item.record_is_new);
 	}
 
 	/**
