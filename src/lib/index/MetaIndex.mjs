@@ -110,6 +110,7 @@ class MetaIndex {
 	}
 	
 	async add_records(...records) {
+		l.log(`add_records: records`, records);
 		const result = await this.db.insert(records);
 		this.#check_errors(result);
 		return result.inserted;

@@ -97,7 +97,7 @@ class VectorIndex {
 		const handle = this.#open_write(this.filepath, `a`); // WARNING: Won't work for compressed stuff! TODO handle this
 		
 		for (const item of items) {
-			l.info(`add: item`, item);
+			// l.info(`add: item`, item);
 			if (typeof item.id != "number") throw new Error(`Invalid item id`);
 			if (!(item.vector instanceof Array)) throw new Error(`Invalid item vector`);
 			await write_safe(handle, this.#encode_item(item) + `\n`);

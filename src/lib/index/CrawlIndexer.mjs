@@ -83,7 +83,7 @@ class CrawlIndexer {
 		if(record == null) { // We'll pull a new one out of thin air if we have to!
 			record_is_new = true;
 			record = {
-				id: await this.app.idtracker.getid(),
+				id: this.app.idtracker.getid(),
 				filepath,
 			};
 		}
@@ -118,7 +118,6 @@ class CrawlIndexer {
 		
 		const vectors = await this.pythonmanager.clipify_image(items.map(item => item.filepath));
 		
-		l.log(`DEBUG RESULT vectors`, vectors);
 		// Add vectors to item TASK as it goes through the pipeline
 		for(const i in vectors) {
 			items[i].vector = vectors[i];

@@ -17,6 +17,17 @@ export default async function extract_exif(filepath) {
 	return exif;
 }
 
+/**
+ * Closes the exiftool subprocess.
+ * WARNING: No mmore requests will be accepted after calling this method!
+ * @return	{void}
+ */
+async function close_exif() {
+	await exiftool.end();
+}
+
+export { extract_exif, close_exif };
+
 // Test:
 // console.log(JSON.stringify(await extract_exif(`/tmp/x/test.png`)));
 

@@ -23,4 +23,6 @@ export default async function() {
 	
 	l.log(`DEBUG: STARTING CRAWL`);
 	await app.crawler.crawl();
+	
+	// Cannot close here because the crawler queues are probably still full
 }
