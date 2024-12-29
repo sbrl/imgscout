@@ -48,14 +48,14 @@ A future goal is to reduce resource and energy usage as much as possible while m
 ## Philosophy
 Note that some of these are a work-in-progress.
 
-- imgscout will not touch any of the files in provided directories, and treats them as read-only
-- AI will be implemented ethically and transparently
-- A friendly and welcoming environment for both users and contributors is desirable
-- Pure JS libraries are always preferred to enable portability and reduce compilation issues
-- The number of Python dependencies will be minimised as much as possible
-- All dependencies and setup instructions should be clearly detailed and defined
-- "Documentation, not code, defines what a program does" - great docs are v important
-- *Please* put imgscout behind a reverse proxy....!
+- 📝‍🚫 imgscout will not touch any of the files in provided directories, and treats them as read-only
+- 🧲 AI will be implemented ethically and transparently
+- 👋 A friendly and welcoming environment for both users and contributors is desirable
+- ✅ Pure JS libraries are always preferred to enable portability and reduce compilation issues
+- 📉 The number of Python dependencies will be minimised as much as possible
+- 📚 All dependencies and setup instructions should be clearly detailed and defined
+- 📑 "Documentation, not code, defines what a program does" - great docs are v important
+- 🔐 *Please* put imgscout behind a reverse proxy....!
 
 
 ## Contributing
